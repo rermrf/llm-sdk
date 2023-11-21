@@ -3,7 +3,7 @@ use derive_builder::Builder;
 use reqwest::{Client, RequestBuilder};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize, Builder)]
+#[derive(Debug, Clone, Serialize, Builder)]
 #[builder(pattern = "mutable")]
 pub struct CreateImageRequest {
     /// A text description of the desired image(s). The maximum length is 4000 characters for dall-e-3.
@@ -38,29 +38,33 @@ pub struct CreateImageRequest {
     pub user: Option<String>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
 pub enum ImageModel {
     #[serde(rename = "dall-e-3")]
+    #[default]
     DallE3,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ImageQuality {
+    #[default]
     Standard,
     Hd,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ImageResponseFormat {
+    #[default]
     Url,
     B64Json,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
 pub enum ImageSize {
     #[serde(rename = "1024x1024")]
+    #[default]
     Large,
     #[serde(rename = "1792x1024")]
     LargeWide,
@@ -68,24 +72,31 @@ pub enum ImageSize {
     LargeTall,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ImageStyle {
+    #[default]
     Vivid,
     Natural,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct CreateImageResponse {
-    /// The base64-encoded JSON of the generated image, if response_format is b64_json.
-    b64_json: Option<String>,
-    /// The URL of the generated image, if response_format is url (default).
-    url: Option<String>,
-    /// The prompt that was used to generate the image, if there was any revision to the prompt.
-    revised_prompt: Option<String>,
+    pub created: u64,
+    pub data: Vec<ImageObject>,
 }
 
-impl IntoRequest for CreateImageResponse {
+#[derive(Debug, Clone, Deserialize)]
+pub struct ImageObject {
+    /// The base64-encoded JSON of the generated image, if response_format is b64_json.
+    pub b64_json: Option<String>,
+    /// The URL of the generated image, if response_format is url (default).
+    pub url: Option<String>,
+    /// The prompt that was used to generate the image, if there was any revision to the prompt.
+    pub revised_prompt: Option<String>,
+}
+
+impl IntoRequest for CreateImageRequest {
     fn into_request(self, client: Client) -> RequestBuilder {
         client
             .post("https://api.openai.com/v1/images/generations")
@@ -102,40 +113,12 @@ impl CreateImageRequest {
     }
 }
 
-impl Default for ImageModel {
-    fn default() -> Self {
-        ImageModel::DallE3
-    }
-}
-
-impl Default for ImageQuality {
-    fn default() -> Self {
-        ImageQuality::Standard
-    }
-}
-
-impl Default for ImageResponseFormat {
-    fn default() -> Self {
-        ImageResponseFormat::Url
-    }
-}
-
-impl Default for ImageSize {
-    fn default() -> Self {
-        ImageSize::Large
-    }
-}
-
-impl Default for ImageStyle {
-    fn default() -> Self {
-        ImageStyle::Vivid
-    }
-}
-
-
 #[cfg(test)]
 mod tests {
+    use std::fs;
+
     use super::*;
+    use crate::LlmSdk;
     use anyhow::Result;
 
     #[test]
@@ -154,6 +137,26 @@ mod tests {
                 "quality": "hd"
             })
         );
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn create_image_show_work() -> Result<()> {
+        let sdk = LlmSdk::new("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".to_string());
+        let req = CreateImageRequest::new("draw a cute caterpillar");
+        let res = sdk.create_image(req).await?;
+        // assert_eq!(res.data.len(), 1);
+        let image = &res.data[0];
+        // assert!(image.url.is_some());
+        // assert!(image.b64_json.is_none());
+        println!("image: {image:?}");
+        fs::write(
+            "/tmp/llm-sdk/caterpillar.png",
+            reqwest::get(image.url.as_ref().unwrap())
+                .await?
+                .bytes()
+                .await?,
+        )?;
         Ok(())
     }
 }
