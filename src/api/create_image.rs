@@ -21,6 +21,7 @@ pub struct CreateImageRequest {
     #[builder(default)]
     pub response_format: ImageResponseFormat,
     /// The size of the generated images. Must be one of 1024x1024, 1792x1024, or 1024x1792 for dall-e-3 models.
+    #[builder(default)]
     pub size: ImageSize,
     /// The style of the generated images. Must be one of vivid or natural. Vivid causes the model to lean towards generating hyper-real and dramatic images. Natural causes the model to produce more natural, less hyper-real looking images. This param is only supported for dall-e-3.
     pub style: Option<String>,
@@ -51,11 +52,11 @@ pub enum ImageResponseFormat {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ImageSize {
     #[serde(rename = "1024x1024")]
-    Size1024x1024,
+    Large,
     #[serde(rename = "1792x1024")]
-    Size1792x1024,
+    LargeWide,
     #[serde(rename = "1024x1792")]
-    Size1024x1792,
+    LargeTall,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -84,5 +85,11 @@ impl Default for ImageQuality {
 impl Default for ImageResponseFormat {
     fn default() -> Self {
         ImageResponseFormat::Url
+    }
+}
+
+impl Default for ImageSize {
+    fn default() -> Self {
+        ImageSize::Large
     }
 }
