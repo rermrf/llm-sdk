@@ -159,4 +159,11 @@ mod tests {
         )?;
         Ok(())
     }
+
+    #[test]
+    fn print_var(){
+        let token = std::env::var("OPENAI_API_KEY").unwrap();
+        println!("{}",token);
+    }
+
 }
