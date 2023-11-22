@@ -143,15 +143,15 @@ mod tests {
     #[tokio::test]
     async fn create_image_show_work() -> Result<()> {
         let sdk = LlmSdk::new(std::env::var("OPENAI_API_KEY").unwrap());
-        let req = CreateImageRequest::new("draw a cute caterpillar");
+        let req = CreateImageRequest::new("draw Meg Griffin");
         let res = sdk.create_image(req).await?;
-        // assert_eq!(res.data.len(), 1);
+        assert_eq!(res.data.len(), 1);
         let image = &res.data[0];
-        // assert!(image.url.is_some());
-        // assert!(image.b64_json.is_none());
+        assert!(image.url.is_some());
+        assert!(image.b64_json.is_none());
         println!("image: {image:?}");
         fs::write(
-            "../../../tmp/llm-sdk/caterpillar.png",
+            "../tmp/llm-sdk/Meg.png",
             reqwest::get(image.url.as_ref().unwrap())
                 .await?
                 .bytes()
