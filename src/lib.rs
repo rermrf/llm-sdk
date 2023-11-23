@@ -27,7 +27,7 @@ impl LlmSdk {
 
     pub async fn chat_completion(
         &self,
-        req: ChatCompletionResponse,
+        req: ChatCompletionRequest,
     ) -> Result<ChatCompletionResponse> {
         let req = self.prepare_request(req);
         let res = req.send().await?;
