@@ -4,7 +4,11 @@ use serde::{Deserialize, Serialize};
 use crate::IntoRequest;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChatCompletionRequest {}
+pub struct ChatCompletionRequest {
+    /// A list of messages comprising the conversation so far.
+    messages: Vec<String>,
+    
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatCompletionResponse {}
@@ -16,3 +20,5 @@ impl IntoRequest for ChatCompletionResponse {
             .json(&self)
     }
 }
+
+

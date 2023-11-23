@@ -50,3 +50,9 @@ impl LlmSdk {
         req.timeout(Duration::from_secs(TIMEOUT))
     }
 }
+
+
+#[cfg(test)]
+lazy_static::lazy_static! {
+    static ref SDK: LlmSdk = LlmSdk::new(std::env::var("OPENAI_API_KEY").unwrap());
+}
