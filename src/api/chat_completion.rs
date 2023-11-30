@@ -190,7 +190,7 @@ pub struct FunctionCall {
     pub arguments: String,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq,  Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ToolType {
     #[default]
@@ -231,9 +231,11 @@ mod tests {
             .messages(vec![])
             .build()
             .unwrap();
-        // let json = serde_json::to_value(req).unwrap();
-        // assert_eq!(json, )
-        println!("{}", serde_json::to_string(&req).unwrap());
+        let json = serde_json::to_value(req).unwrap();
+        assert_eq!(
+            json,
+            serde_json::json!({"messages":[],"tool_choice":{"function":{"type":"function","name":"my_function1"}}})
+        );
         // 34.58
     }
 }
